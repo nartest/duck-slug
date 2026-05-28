@@ -28,11 +28,19 @@ jobs:
       ci_tools_version: v1.4-andium
       extension_name: duck_slug
 
-  duckdb-stable-build:
-    name: Build extension binaries (DuckDB v1.5)
+  duckdb-v152-build:
+    name: Build extension binaries (DuckDB v1.5.2)
     uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5-variegata
     with:
       duckdb_version: v1.5.2
+      ci_tools_version: v1.5-variegata
+      extension_name: duck_slug
+
+  duckdb-stable-build:
+    name: Build extension binaries (DuckDB v1.5.3)
+    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5-variegata
+    with:
+      duckdb_version: v1.5.3
       ci_tools_version: v1.5-variegata
       extension_name: duck_slug
 
