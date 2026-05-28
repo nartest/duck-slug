@@ -34,6 +34,7 @@ jobs:
 
       - name: Arrange extensions in repository layout
         run: |
+          touch gh-pages/.nojekyll
           for artifact_dir in /tmp/artifacts/duck_slug-*/; do
             artifact_name=$(basename "$artifact_dir")
             # artifact_name format: duck_slug-{duckdb_version}-extension-{arch}
