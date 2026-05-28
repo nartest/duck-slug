@@ -87,3 +87,14 @@ query I
 SELECT slugify(NULL);
 ----
 NULL
+
+# Input that produces no slug output → empty string
+query I
+SELECT slugify('日本語');
+----
+(empty)
+
+query I
+SELECT slugify('---');
+----
+(empty)
