@@ -1,0 +1,89 @@
+# name: test/sql/duck_slug.test
+# description: test duck_slug extension
+# group: [sql]
+
+# Before we load the extension, this will fail
+statement error
+SELECT slugify('hello');
+----
+Catalog Error: Scalar Function with name slugify does not exist!
+
+# Require statement will ensure this test is run with this extension loaded
+require duck_slug
+
+# Basic ASCII — lowercase, no change
+query I
+SELECT slugify('hello');
+----
+hello
+
+# Uppercase → lowercase
+query I
+SELECT slugify('Hello World');
+----
+hello-world
+
+# French accents
+query I
+SELECT slugify('Héllo Wörld');
+----
+hello-world
+
+# French: é è ê à ù ç
+query I
+SELECT slugify('crème brûlée');
+----
+creme-brulee
+
+# Spanish: ñ
+query I
+SELECT slugify('El Niño');
+----
+el-nino
+
+# German: ß ü ö ä
+query I
+SELECT slugify('straße');
+----
+strasse
+
+query I
+SELECT slugify('Über');
+----
+uber
+
+# Numbers preserved
+query I
+SELECT slugify('Hello World 2024');
+----
+hello-world-2024
+
+# Punctuation → separator
+query I
+SELECT slugify('C++ rocks');
+----
+c-rocks
+
+# Multiple consecutive separators → single dash
+query I
+SELECT slugify('foo  bar');
+----
+foo-bar
+
+# Leading and trailing separators trimmed
+query I
+SELECT slugify('  --foo-- ');
+----
+foo
+
+# Empty string
+query I
+SELECT slugify('');
+----
+(empty)
+
+# NULL → NULL
+query I
+SELECT slugify(NULL);
+----
+NULL
