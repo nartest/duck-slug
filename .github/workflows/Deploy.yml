@@ -49,6 +49,8 @@ jobs:
       - name: Push to gh-pages
         run: |
           cd gh-pages
+          # Init fresh repo (works whether checkout succeeded or failed)
+          rm -rf .git
           git init -b gh-pages
           git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
           git config user.name "github-actions[bot]"
