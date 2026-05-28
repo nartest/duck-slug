@@ -4,7 +4,6 @@
 #include "duckdb.hpp"
 #include "duckdb/common/exception.hpp"
 #include "duckdb/function/scalar_function.hpp"
-#include <duckdb/parser/parsed_data/create_scalar_function_info.hpp>
 
 #include <algorithm>
 #include <array>
@@ -230,6 +229,9 @@ static char32_t DecodeUtf8(const char *&ptr, const char *end) {
 	if (b < 0x80) {
 		return b;
 	}
+	if (b < 0xC2) {
+		return 0xFFFD;
+	}
 	if (b < 0xE0) {
 		if (ptr >= end) {
 			return 0xFFFD;
@@ -238,7 +240,7 @@ static char32_t DecodeUtf8(const char *&ptr, const char *end) {
 	}
 	if (b < 0xF0) {
 		if (ptr + 1 >= end) {
-			return 0xFFFD;
+			return 0xFFFD; // safe: DuckDB VARCHAR guarantees well-formed UTF-8
 		}
 		char32_t r = static_cast<char32_t>(b & 0x0F) << 12;
 		r |= static_cast<char32_t>(static_cast<unsigned char>(*ptr++) & 0x3F) << 6;
@@ -246,7 +248,7 @@ static char32_t DecodeUtf8(const char *&ptr, const char *end) {
 		return r;
 	}
 	if (ptr + 2 >= end) {
-		return 0xFFFD;
+		return 0xFFFD; // safe: DuckDB VARCHAR guarantees well-formed UTF-8
 	}
 	char32_t r = static_cast<char32_t>(b & 0x07) << 18;
 	r |= static_cast<char32_t>(static_cast<unsigned char>(*ptr++) & 0x3F) << 12;
@@ -302,7 +304,7 @@ static std::string Slugify(const char *data, size_t len) {
 // DuckDB scalar function wrapper
 // ---------------------------------------------------------------------------
 
-inline void SlugifyScalarFun(DataChunk &args, ExpressionState &state, Vector &result) {
+static void SlugifyScalarFun(DataChunk &args, ExpressionState &state, Vector &result) {
 	auto &input = args.data[0];
 	UnaryExecutor::Execute<string_t, string_t>(input, result, args.size(), [&](string_t s) {
 		return StringVector::AddString(result, Slugify(s.GetData(), s.GetSize()));
